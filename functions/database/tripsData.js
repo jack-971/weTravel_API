@@ -5,10 +5,16 @@ const { param } = require('../api/routes/trips');
  * Queries database for a set of user trips for a given user id and a given trip status.
  * @param {*} userId 
  */
-function getUsersTrips(userId, status) {
-    var sql = "SELECT * FROM WT_Trip INNER JOIN WT_TripUsers ON WT_Trip.ID = WT_TripUsers.TripID \
+function getUsersTrips(userId, status, post) {
+    let table = "";
+    if (!post) {
+        table = "WT_Trip";
+    } else {
+        table = "WT_TripPost";
+    }
+    var sql = "SELECT * FROM "+table+" INNER JOIN WT_TripUsers ON "+table+".ID = WT_TripUsers.TripID \
     INNER JOIN WT_TripStatus ON WT_TripUsers.TripStatusID = WT_TripStatus.TripStatusID\
-    WHERE userID = ? AND TripStatus = ? ORDER BY DateStart IS NULL, DateStart"
+    WHERE WT_TripUsers.UserID = ? AND TripStatus = ? ORDER BY DateStart IS NULL, DateStart"
     if (status === 'complete') {
         console.log("complete");
         sql = sql + " DESC;";
@@ -50,10 +56,16 @@ function getTripUsers(tripId) {
  * Queries database for a list of legs associated with a trip Id.
  * @param {*} tripId 
  */
-function getTripLegs(tripId, userId) {
-    var sql = "SELECT * FROM WT_TripLeg INNER JOIN WT_Leg ON WT_TripLeg.LegID = WT_Leg.ID WHERE TripID = ? \
+function getTripLegs(tripId, userId, post) {
+    let table = "";
+    if (!post) {
+        table = "WT_Leg";
+    } else {
+        table = "WT_LegPost";
+    }
+    var sql = "SELECT * FROM WT_TripLeg INNER JOIN "+table+" ON WT_TripLeg.LegID = "+table+".ID WHERE TripID = ? \
     AND WT_TripLeg.LegID IN \
-    (Select WT_TripLeg.LegID FROM WT_TripLeg INNER JOIN WT_Leg ON WT_TripLeg.LegID = WT_Leg.ID WHERE WT_TripLeg.TripID = ? \
+    (Select WT_TripLeg.LegID FROM WT_TripLeg INNER JOIN "+table+" ON WT_TripLeg.LegID = "+table+".ID WHERE WT_TripLeg.TripID = ? \
     AND WT_TripLeg.UserID = ?) \
     ORDER BY DateStart IS NULL, DateStart;";
     const parameter = [tripId, tripId, userId];
@@ -65,12 +77,21 @@ function getTripLegs(tripId, userId) {
  * Queries database for a list of activities associated with a trip id and user id.
  * @param {*} tripId 
  */
-function getLegActivities(tripId, userId) {
-    var sql = "SELECT * FROM WT_Activity \
-            INNER JOIN WT_LegActivity ON WT_LegActivity.ActivityID = WT_Activity.ID  \
+function getLegActivities(tripId, userId, post) {
+    let activityTable = "";
+    let legTable = "";
+    if (!post) {
+        activityTable = "WT_Activity";
+        legTable = "WT_Leg";
+    } else {
+        activityTable = "WT_ActivityPost";
+        legTable = "WT_LegPost";
+    }
+    var sql = "SELECT * FROM "+activityTable+" \
+            INNER JOIN WT_LegActivity ON WT_LegActivity.ActivityID = "+activityTable+".ID  \
             WHERE WT_LegActivity.LegID IN  \
-            (Select WT_TripLeg.LegID FROM WT_TripLeg INNER JOIN WT_Leg ON WT_TripLeg.LegID = WT_Leg.ID WHERE WT_TripLeg.TripID = ? \
-                AND WT_LegActivity.ActivityUserID = ?) ORDER BY DateStart IS NULL, DateStart;";
+            (Select WT_TripLeg.LegID FROM WT_TripLeg INNER JOIN "+legTable+" ON WT_TripLeg.LegID = "+legTable+".ID WHERE WT_TripLeg.TripID = ? \
+                AND WT_TripLeg.UserID = ?) ORDER BY DateStart IS NULL, DateStart;";
     const parameter = [tripId, userId];
     const errorMessage = "Error retrieving leg activites from database."
     return db.queryDb(sql, parameter, errorMessage);
@@ -153,6 +174,8 @@ function postTrip(userId, updates) {
     INSERT INTO WT_TripUsers VALUES (?, @last_trip_id, 1); \
     COMMIT; \
     SELECT * FROM WT_Trip WHERE ID = @last_trip_id;";
+    console.log("description"+updates.Description);
+    console.log("description check nulkl"+db.checkNull(updates.Description));
     parameter = [updates.Name, db.checkNull(updates.Picture), db.checkNull(updates.DateStart), db.checkNull(updates.DateFinish), db.checkNull(updates.Description), 
         db.checkNull(updates.LocationID), db.checkNull(updates.LocationDetail), db.checkNull(updates.Review), userId];
     const errorMessage = "Error updating trip in database";
@@ -293,7 +316,7 @@ function patchTripComplete(userId) {
  * @param {*} tripDetails 
  */
 function postTripPost(userId, tripId, details) {
-    const sql = "INSERT INTO WT_TripPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    const sql = "INSERT INTO WT_TripPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);";
     parameter = [tripId, userId, details.Name, db.checkNull(details.Picture), db.checkNull(details.DateStart), 
         db.checkNull(details.DateFinish), db.checkNull(details.Description), db.checkNull(details.LocationID), 
         db.checkNull(details.LocationDetail), db.checkNull(details.Review)];
@@ -303,7 +326,7 @@ function postTripPost(userId, tripId, details) {
 }
 
 function postLegPost(userId, legId, details) {
-    const sql = "INSERT INTO WT_LegPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    const sql = "INSERT INTO WT_LegPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);";
     parameter = [legId, userId, details.Name, db.checkNull(details.DateStart), 
         db.checkNull(details.DateFinish), db.checkNull(details.Description), db.checkNull(details.LocationID), 
         db.checkNull(details.LocationDetail), db.checkNull(details.Review)];
@@ -312,7 +335,7 @@ function postLegPost(userId, legId, details) {
 }
 
 function postActivityPost(userId, activityId, details) {
-    const sql = "INSERT INTO WT_ActivityPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?);"; 
+    const sql = "INSERT INTO WT_ActivityPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, NULL);"; 
     parameter = [activityId, userId, details.Name, db.checkNull(details.DateStart), 
         db.checkNull(details.DateFinish), db.checkNull(details.Description), db.checkNull(details.LocationID), 
         db.checkNull(details.LocationDetail), db.checkNull(details.Notes), db.checkNull(details.Review)];

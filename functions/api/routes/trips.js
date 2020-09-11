@@ -11,15 +11,21 @@ const fcm = require('../middleware/pushNotification');
 router.get('/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
     const status = req.query.status;
+    let post = false;
+    if (status === "complete") {
+        post = true;
+    }
     try {
-            const data = await trips.getUsersTrips(id, status); // sends an error if there is no current trip.
+            const data = await trips.getUsersTrips(id, status, post);
+            console.log(data); // sends an error if there is no current trip.
             if (status === 'active') {
                 tripId = data[0].ID;
+                const trip = await trips.getUsersTrips(id, status, true);
                 const users = await trips.getTripUsers(tripId);
-                const legs = await trips.getTripLegs(tripId, id);
-                const activities = await trips.getLegActivities(tripId, id);
-                //res.set('Cache-Control', 'public, max-age=300, s-maxage=600'); // remove caching to a method so it is easily updated and only used when wanted.
-                res.status(200).json({"trip":data, "users": users, "legs": legs, "activities": activities});
+                const legs = await trips.getTripLegs(tripId, id, true);
+                const activities = await trips.getLegActivities(tripId, id, true);
+                res.status(200).json({"trip":trip, "users": users, "legs": legs, "activities": activities});
+                //res.status(200).json({"trip":trip});
             } else {
                 res.status(200).json({data});
             }
@@ -35,19 +41,24 @@ router.get('/:id', async(req, res, next) => {
 router.get('/trip/:id', async(req, res, next) => {
     const userId = parseInt(req.params.id);
     const tripId = req.query.trip;
+    const status = req.query.status;
     console.log(tripId);
+    let post = false;
+    if (status !== "planned") {
+        post = true;
+    }
     try {
         const trip = await trips.getTrip(tripId, userId);
         const users = await trips.getTripUsers(tripId);
-        const legs = await trips.getTripLegs(tripId, userId);
-        const activities = await trips.getLegActivities(tripId, userId);
+        const legs = await trips.getTripLegs(tripId, userId, post);
+        const activities = await trips.getLegActivities(tripId, userId, post);
         //res.set('Cache-Control', 'public, max-age=300, s-maxage=600'); // remove caching to a method so it is easily updated and only used when wanted.
         res.status(200).json({"trip": trip, "users": users, "legs": legs, "activities": activities});
     } catch (err) {
         return next(err);
     }
 });
-
+/*
 router.get('/active/:id', async(req, res, next) => {
     const userId = parseInt(req.params.id);
     try {
@@ -62,7 +73,7 @@ router.get('/active/:id', async(req, res, next) => {
         return next(err);
     }
 });
-
+*/
 /**
  * Updates details for an entry. Determines whether updates should be to an entry or an entry post.
  */
@@ -157,8 +168,11 @@ router.post('/trip/user/:id', async(req, res, next) => {
     //post notification
      if (values.type === 'trip') {
         const keys = await notification.getKeys([values.user]);
-        const key = keys[0].NotificationKey;
-        fcm.sendNotification(key, "trip_added");
+        console.log("key is "+keys[0]);
+        if(keys[0]!= undefined) {
+            const key = keys[0].NotificationKey;
+            fcm.sendNotification(key, "trip_added");
+        }
         notification.postNotification(values.user, "trip_added", null, id, values.time);
         await trips.addTripUser(values.user, id);
      } else if(values.type === 'leg') {
@@ -211,8 +225,8 @@ router.patch('/status/:id', async(req, res, next) => {
             // change the status
             await trips.patchTripActive(userId, tripId); 
             // Get all the entries associated with the trip.
-            let [trip, legs, activities] = await Promise.all([trips.getUsersTrips(userId, 'active'), trips.getTripLegs(tripId, userId), 
-                    trips.getLegActivities(tripId, userId)])
+            let [trip, legs, activities] = await Promise.all([trips.getUsersTrips(userId, 'active', false), trips.getTripLegs(tripId, userId, false), 
+                    trips.getLegActivities(tripId, userId, false)])
             // extract the trip, legs array & activities array from JSON response.
             const tripDetails = trip[0];
             await trips.postTripPost(userId, tripId, tripDetails); // post trip data into table.

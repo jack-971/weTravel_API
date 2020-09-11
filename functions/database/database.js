@@ -79,10 +79,11 @@ function multiqueryDb(sql, parameter, errorMessage) {
  * @param {*} field 
  */
 function checkNull(field) {
-    //console.log("fieleddd");
+   // console.log("fieleddd");
     //console.log(field);
     if (!field) {
-        return field;
+        //console.log("not field!");
+        return null; // was return field
     } else {
         // check if a number (taken from db instead of from device)
         if (typeof(field) === 'string') {

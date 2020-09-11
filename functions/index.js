@@ -42,6 +42,8 @@ const settingsRoute = require('./api/routes/settings');
 app.use('/secure/settings', settingsRoute);
 const tripsRoute = require('./api/routes/trips');
 app.use('/secure/trips', tripsRoute);
+const imageRoute = require('./api/routes/image');
+app.use('/secure/image', imageRoute);
 
 // Handle invalid routes and any thrown errors
 app.use(errorHandlers.errorHandling.notFound);
