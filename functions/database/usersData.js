@@ -6,7 +6,7 @@ const db = require('./database');
  * @param {*} userId 
  */
 function getUserFriends(userId) {
-    const select = "SELECT WT_UserProfile.UserID, Name, ProfilePicture, HomeLocation, Description, Dob, Username, FirstUserID, SecondUserID, WT_RelationshipType.RelationshipType, Private \
+    const select = "SELECT WT_UserProfile.UserID, Name, ProfilePicture, HomeLocation, Description, Dob, DateJoined, Username, FirstUserID, SecondUserID, WT_RelationshipType.RelationshipType, Private \
     FROM WT_Relationships INNER JOIN WT_RelationshipType ON WT_Relationships.RelationshipType= WT_RelationshipType.RelationshipTypeID"
     const sql = select+ " INNER JOIN WT_UserProfile ON WT_Relationships.SecondUserID = WT_UserProfile.UserID \
     INNER JOIN WT_Settings ON WT_UserProfile.UserID = WT_Settings.UserID \
@@ -28,7 +28,7 @@ function getUserFriends(userId) {
  * @param {*} query 
  */
 function getUserSearch(query) {
-    const select = "SELECT WT_UserProfile.UserID, Name, Dob, HomeLocation, ProfilePicture, Description, Username, Private \
+    const select = "SELECT WT_UserProfile.UserID, Name, Dob, HomeLocation, ProfilePicture, Description, DateJoined, Username, Private \
      FROM WT_UserProfile INNER JOIN WT_Login ON WT_UserProfile.UserID = WT_Login.UserID \
      INNER JOIN WT_Settings ON WT_UserProfile.UserID = WT_Settings.UserID";
     const sql = select + " WHERE Name = ? OR Username = ? UNION " + select + " WHERE Name LIKE ? OR Username LIKE ? UNION " + select + " WHERE Name LIKE ? OR Username LIKE ?";

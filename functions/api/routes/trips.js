@@ -169,7 +169,7 @@ router.post('/trip/user/:id', async(req, res, next) => {
      if (values.type === 'trip') {
         const keys = await notification.getKeys([values.user]);
         console.log("key is "+keys[0]);
-        if(keys[0]!= undefined) {
+        if(keys[0]!== undefined) {
             const key = keys[0].NotificationKey;
             fcm.sendNotification(key, "trip_added");
         }
@@ -244,6 +244,26 @@ router.patch('/status/:id', async(req, res, next) => {
         } else {
             await trips.patchTripComplete(userId);
         }
+        res.status(200).json({"message": "success"});
+    } catch (err) {
+        return next(err);
+    }
+});
+
+router.patch('/post/:id', async(req, res, next) => {
+    const postId = parseInt(req.params.id);
+    try {
+        const data = await trips.patchPostStatus(postId, req.body.user, req.body.type, req.body.time)
+        res.status(200).json({"message": "success"});
+    } catch (err) {
+        return next(err);
+    }
+});
+
+router.get('/post/:id', async(req, res, next) => {
+    const userId = parseInt(req.params.id);
+    try {
+        //const data = await trips.patchPostStatus(postId, req.body.user, req.body.type, req.body.time)
         res.status(200).json({"message": "success"});
     } catch (err) {
         return next(err);

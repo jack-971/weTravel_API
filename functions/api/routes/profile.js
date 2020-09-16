@@ -4,6 +4,7 @@ const router = express.Router();
 const user = require('../../database/accountData');
 const notification = require('../../database/notificationData');
 const friends = require('../../database/usersData');
+const trips = require('../../database/tripsData');
 
 /**
  * Get the user account information for the given id. 
@@ -11,9 +12,9 @@ const friends = require('../../database/usersData');
 router.get('/admin/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
     try {
-        let [data, notifications, friendsList] = await Promise.all([user.getAccountAdminProfile(id), notification.getNotifications(id), 
-            friends.getUserFriends(id)]);
-        res.status(200).json({data, notifications, friendsList});
+        let [data, notifications, friendsList, posts] = await Promise.all([user.getAccountAdminProfile(id), notification.getNotifications(id), 
+            friends.getUserFriends(id), trips.getFriendsPosts(id)]);
+        res.status(200).json({data, notifications, friendsList, posts});
     } catch (err) {
         return next(err);
     }

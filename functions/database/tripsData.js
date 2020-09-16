@@ -1,5 +1,4 @@
 const db = require('./database');
-const { param } = require('../api/routes/trips');
 
 /**
  * Queries database for a set of user trips for a given user id and a given trip status.
@@ -316,7 +315,7 @@ function patchTripComplete(userId) {
  * @param {*} tripDetails 
  */
 function postTripPost(userId, tripId, details) {
-    const sql = "INSERT INTO WT_TripPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);";
+    const sql = "INSERT INTO WT_TripPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 0);";
     parameter = [tripId, userId, details.Name, db.checkNull(details.Picture), db.checkNull(details.DateStart), 
         db.checkNull(details.DateFinish), db.checkNull(details.Description), db.checkNull(details.LocationID), 
         db.checkNull(details.LocationDetail), db.checkNull(details.Review)];
@@ -326,7 +325,7 @@ function postTripPost(userId, tripId, details) {
 }
 
 function postLegPost(userId, legId, details) {
-    const sql = "INSERT INTO WT_LegPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);";
+    const sql = "INSERT INTO WT_LegPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 0);";
     parameter = [legId, userId, details.Name, db.checkNull(details.DateStart), 
         db.checkNull(details.DateFinish), db.checkNull(details.Description), db.checkNull(details.LocationID), 
         db.checkNull(details.LocationDetail), db.checkNull(details.Review)];
@@ -335,7 +334,7 @@ function postLegPost(userId, legId, details) {
 }
 
 function postActivityPost(userId, activityId, details) {
-    const sql = "INSERT INTO WT_ActivityPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, NULL);"; 
+    const sql = "INSERT INTO WT_ActivityPost VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, NULL, NULL, 0);"; 
     parameter = [activityId, userId, details.Name, db.checkNull(details.DateStart), 
         db.checkNull(details.DateFinish), db.checkNull(details.Description), db.checkNull(details.LocationID), 
         db.checkNull(details.LocationDetail), db.checkNull(details.Notes), db.checkNull(details.Review)];
@@ -372,6 +371,49 @@ function patchActivityPost(userId, updates) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+function patchPostStatus(postId, userId, type, time) {
+    const table = getTable(type);
+    const sql = "UPDATE "+table+" SET Time = ?, Posted=1 WHERE ID = ? AND UserID = ?;"
+    parameter = [time, postId,userId];
+    const errorMessage = "Error setting post to posted";
+    return db.queryDb(sql, parameter, errorMessage);
+}
+
+function getFriendsPosts(userId, type) {
+    const timeRange = 2419000000; // 1 month
+    //const timeRange = 0;
+    const selectQuery = " WT_UserProfile.UserID, ID, DateStart, DateFinish, LocationID, LocationDetail, Review, Time, ProfilePicture, \
+                WT_UserProfile.Name AS UserName,  Url, "
+    const tripQuery = "SELECT "+selectQuery+" WT_TripPost.Name, WT_TripPost.Description FROM WT_TripPost INNER JOIN WT_UserProfile ON WT_TripPost.UserID = WT_UserProfile.UserID\
+        LEFT OUTER JOIN WT_Gallery ON WT_TripPost.GalleryID = WT_Gallery.GalleryID ";
+    const legQuery = "SELECT "+selectQuery+" WT_LegPost.Name, WT_LegPost.Description FROM WT_LegPost INNER JOIN WT_UserProfile ON WT_LegPost.UserID = WT_UserProfile.UserID\
+        LEFT OUTER JOIN WT_Gallery ON WT_LegPost.GalleryID = WT_Gallery.GalleryID ";
+    const activityQuery = "SELECT "+selectQuery+" WT_ActivityPost.Name, WT_ActivityPost.Description, Notes FROM WT_ActivityPost INNER JOIN WT_UserProfile ON WT_ActivityPost.UserID = WT_UserProfile.UserID\
+        LEFT OUTER JOIN WT_Gallery ON WT_ActivityPost.GalleryID = WT_Gallery.GalleryID ";
+    const query = "LEFT OUTER JOIN WT_Image ON WT_Gallery.ImageID = WT_Image.ImageID WHERE WT_UserProfile.UserID IN (SELECT UserID FROM WT_User INNER JOIN WT_Relationships ON WT_User.UserID = WT_Relationships.FirstUserID\
+    INNER JOIN WT_RelationshipType ON WT_Relationships.RelationshipType= WT_RelationshipType.RelationshipTypeID\
+    WHERE SecondUserID = ? AND WT_RelationshipType.RelationshipType = 'friends'\
+    UNION \
+    SELECT UserID FROM WT_User INNER JOIN WT_Relationships ON WT_User.UserID = WT_Relationships.SecondUserID\
+    INNER JOIN WT_RelationshipType ON WT_Relationships.RelationshipType= WT_RelationshipType.RelationshipTypeID\
+    WHERE FirstUserID = ? AND WT_RelationshipType.RelationshipType = 'friends') \
+    AND Posted = 1 AND Time >= "+timeRange+" ORDER BY Time Desc ; ";
+    const sql = tripQuery + query + legQuery + query + activityQuery + query;
+    parameter = [userId, userId, userId, userId, userId, userId];
+    const errorMessage = "Error getting users newsfeed";
+    return db.multiqueryDb(sql, parameter, errorMessage);
+}
+
+function getTable(type) {
+    if (type === "trip") {
+        return "WT_TripPost";
+    } else if (type === "leg") {
+        return "WT_LegPost";
+    } else {
+        return "WT_ActivityPost";
+    }
+}
+
 module.exports = {
     getUsersTrips,
     getTripUsers,
@@ -398,5 +440,7 @@ module.exports = {
     postActivityPost,
     patchTripPost,
     patchLegPost,
-    patchActivityPost
+    patchActivityPost,
+    patchPostStatus,
+    getFriendsPosts
 }
