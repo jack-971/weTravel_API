@@ -3,6 +3,9 @@ const router = express.Router();
 
 const wishlist = require('../../database/wishlistData');
 
+/**
+ * Route gets a users wishlist. If for a profile type also returns list of all locations user has visited.
+ */
 router.get('/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
     try {
@@ -18,6 +21,9 @@ router.get('/:id', async(req, res, next) => {
        }
    });
 
+   /**
+    * Route creates a new item in a users wishlist
+    */
 router.post('/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
     try {
@@ -28,6 +34,9 @@ router.post('/:id', async(req, res, next) => {
        }
    });
 
+   /**
+    * Route removes an item from a users wishlist.
+    */
    router.delete('/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
     try {

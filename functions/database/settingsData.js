@@ -1,13 +1,11 @@
 const db = require('./database');
-const { param } = require('../api/routes/settings');
 
 /**
  * Gets the privacy settings for a given user ID.
  * @param {*} userId 
  */
-function getSettings(userId, update) {
+function getSettings(userId) {
     const sql = "SELECT Private, Notifications, Locations FROM WT_Settings WHERE UserID = ?;"
-    console.log("in set");
     const parameter = userId;
     const errorMessage = "Error getting privacy settings"
     return db.queryDb(sql, parameter, errorMessage);

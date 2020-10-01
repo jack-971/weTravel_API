@@ -1,6 +1,9 @@
 const db = require('./database');
-const { param } = require('../api/routes/profile');
 
+/**
+ * Query gets profile info, settings and username for a given user id.
+ * @param {*} userId 
+ */
 function getAccountAdminProfile(userId) {
     const sql = 'SELECT WT_UserProfile.UserID, Name, ProfilePicture, HomeLocation, Description, Dob, DateJoined, Username, Private, Locations, Notifications FROM WT_UserProfile \
                 INNER JOIN WT_Login ON  WT_UserProfile.UserID = WT_Login.UserID \
@@ -11,6 +14,10 @@ function getAccountAdminProfile(userId) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Query returns profile info for a given user id along with the privacy setting
+ * @param {*} userId 
+ */
 function getAccountProfile(userId) {
     const sql = 'SELECT WT_UserProfile.UserID, Name, ProfilePicture, HomeLocation, Description, Dob, DateJoined, Username, Private FROM WT_UserProfile \
                 INNER JOIN WT_Login ON  WT_UserProfile.UserID = WT_Login.UserID \
@@ -21,6 +28,11 @@ function getAccountProfile(userId) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Route updates a users profile info
+ * @param {*} userId 
+ * @param {*} query 
+ */
 function patchAccountProfile(userId, query) {
     const sql = "UPDATE `WT_UserProfile` SET `Name` = ?, `HomeLocation` = ?, `ProfilePicture` = ?, `Description` = ? WHERE UserId = ?;"
     const parameter = [query.name, query.home, db.checkNull(query.image), db.checkNull(query.description), userId,];

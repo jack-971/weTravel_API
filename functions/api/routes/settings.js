@@ -4,7 +4,7 @@ const router = express.Router();
 const settings = require('../../database/settingsData');
 
 /**
- * Handles get requests for a given users settings information.
+ * Route handles get requests for a given users settings information.
  */
 router.get('/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
@@ -17,14 +17,14 @@ router.get('/:id', async(req, res, next) => {
 });
 
 /**
- * Handles requests for a change in setting.
+ * Route handles requests for a change in user setting.
  */
 router.patch('/:id', async(req, res, next) => {
     const id = parseInt(req.params.id);
     const update = req.body.value;
     const type = req.body.type;
     try {
-        const data = await settings.updatePrivacy(id, update, type);
+        await settings.updatePrivacy(id, update, type);
         res.status(200).json({"message": "Success"});
     } catch (err) {
         return next(err);

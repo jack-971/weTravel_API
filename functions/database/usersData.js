@@ -1,8 +1,8 @@
 const db = require('./database');
 
 /**
- * Queries database to find any instances of the user id in the relationships table. Searches both the first user column and the second user column
- * then unions them together to make on table.
+ * Queries database to find any instances of the user id in the relationships table. 
+ * Searches both the first user column and the second user column then unions them together to make table.
  * @param {*} userId 
  */
 function getUserFriends(userId) {
@@ -32,7 +32,6 @@ function getUserSearch(query) {
      FROM WT_UserProfile INNER JOIN WT_Login ON WT_UserProfile.UserID = WT_Login.UserID \
      INNER JOIN WT_Settings ON WT_UserProfile.UserID = WT_Settings.UserID";
     const sql = select + " WHERE Name = ? OR Username = ? UNION " + select + " WHERE Name LIKE ? OR Username LIKE ? UNION " + select + " WHERE Name LIKE ? OR Username LIKE ?";
-    console.log(sql);
     const parameter = [query, query, query+"%", query+"%", "%"+query+"%", "%"+query+"%"];
     const errorMessage = "Error retrieving user search from database."
     return db.queryDb(sql, parameter, errorMessage);
@@ -53,7 +52,6 @@ function newFriendRequest(requestorId, requesteeId) {
         parameter = [requesteeId, requestorId, 2] // requestor id larger so goes second and request of 2 = sent by second in db
     }
     const errorMessage = "Error inserting new relationship into database";
-    console.log("about to send sql");
     return db.queryDb(sql, parameter, errorMessage);
 }
 
@@ -66,7 +64,6 @@ function newFriendRequest(requestorId, requesteeId) {
 function acceptFriendRequest(requestorId, requesteeId) {
     const sql = "UPDATE `WT_Relationships` SET `RelationshipType` = ? WHERE `WT_Relationships`.`FirstUserID` = ? AND `WT_Relationships`.`SecondUserID` = ?;"
     var parameter = null;
-    console.log(requestorId, requesteeId);
     if (requestorId < requesteeId) {
         parameter = [3, requestorId, requesteeId];
     } else {

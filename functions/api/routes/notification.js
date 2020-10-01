@@ -3,6 +3,10 @@ const router = express.Router();
 
 const notification = require('../../database/notificationData');
 
+/**
+ * Routes controls user notification key for their device. If logging in the new key is saved,
+ * If logging out, the key is removed.
+ */
 router.patch('/:id', async(req, res, next) => {
     const id = req.params.id;
     const key = req.body.key;
@@ -19,6 +23,9 @@ router.patch('/:id', async(req, res, next) => {
     }
 });
 
+/**
+ * Route updates a given notifications status to read
+ */
 router.patch('/read/:id', async(req, res, next) => {
     const id = req.params.id;
     try {

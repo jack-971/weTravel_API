@@ -1,5 +1,10 @@
 const db = require('./database');
 
+/**
+ * Updates a users notification key for firebase
+ * @param {*} userId 
+ * @param {*} key 
+ */
 function patchNewKey(userId, key) {
     const sql = "Update WT_NotificationCentre SET NotificationKey = ? WHERE UserID = ?";
     const parameter = [key, userId];
@@ -7,6 +12,10 @@ function patchNewKey(userId, key) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Query updates a users notification key to null
+ * @param {*} userId 
+ */
 function patchRemoveKey(userId) {
     const sql = "Update WT_NotificationCentre SET NotificationKey = NULL WHERE UserID = ?";
     const parameter = [userId];
@@ -15,7 +24,7 @@ function patchRemoveKey(userId) {
 }
 
 /**
- * Gets the notification keys for a group of user ids.
+ * Query gets the notification keys for a group of user ids.
  * @param {*} userIds 
  */
 function getKeys(userIds) {
@@ -34,7 +43,11 @@ function getKeys(userIds) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
-function getNotifications(userId) { //ORDER BY TIME
+/**
+ * Query gets notifications for a given user starting with most recent
+ * @param {*} userId 
+ */
+function getNotifications(userId) { 
     let sql = "SELECT * FROM WT_Notification INNER JOIN WT_NotificationCentre  \
                 ON WT_Notification.NotificationCentreID = WT_NotificationCentre.NotificationCentreID \
                 WHERE WT_NotificationCentre.UserID = ? ORDER BY Time Desc";
@@ -43,6 +56,10 @@ function getNotifications(userId) { //ORDER BY TIME
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Query updates a notification to read
+ * @param {*} notificationId 
+ */
 function patchNotification(notificationId) {
     let sql = "UPDATE WT_Notification SET NotificationRead = 1 WHERE NotificationID = ?";
     let parameter = [notificationId];
@@ -50,6 +67,14 @@ function patchNotification(notificationId) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Query posts a new notification
+ * @param {*} recieverId 
+ * @param {*} type 
+ * @param {*} senderId 
+ * @param {*} tripId 
+ * @param {*} time 
+ */
 function postNotification(recieverId, type, senderId, tripId, time) {
     let sql = "INSERT INTO WT_Notification VALUES (NULL, (SELECT NotificationCentreID FROM WT_NotificationCentre WHERE UserID = ?), 0, ?, ?, ?, ?);";
     let parameter = [recieverId, type, time, senderId, tripId];

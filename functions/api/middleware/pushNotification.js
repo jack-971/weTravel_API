@@ -1,11 +1,18 @@
 const FCM = require('fcm-node');
 const config = require('../../config');
-const key = config.cloudMessagingKey;
+const key = config.cloudMessagingKey; // Key used to validate connection with Firebase
 const fcm = new FCM(key);
 
+/**
+ * Creates a push notification message. Requires users firebase token, a type and a user ID.
+ * @param {*} token 
+ * @param {*} type 
+ * @param {*} id 
+ */
 function createNotification(token, type, id) {
     let body = '';
     let title = '';
+    // Determine notification type
     switch (type) {
         case "friend_request":
             body = "You have a new friend request!!";
@@ -24,9 +31,9 @@ function createNotification(token, type, id) {
             title = "New Notification";
     }
     const message = { 
-        to: token, 
-        //collapse_key: 'your_collapse_key',
+        to: token, // contains the token to direct firebase to a users device
         
+        // Contains notification details
         data: {
             title: title, 
             body: body,
@@ -38,6 +45,11 @@ function createNotification(token, type, id) {
     return message;
 }
 
+/**
+ * Sends a notification for direction through firebase
+ * @param {*} type 
+ * @param {*} token 
+ */
 function sendNotification(type, token) {
     fcm.send(createNotification(type, token), function(err, response){
         if (err) {

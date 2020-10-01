@@ -1,36 +1,33 @@
 const mysql = require("mysql");
+const config = require('../config');
 
+/**
+ * Used where only query requires execution
+ */
 const pool = mysql.createPool({
-    /*connectionLimit : 1,
-    host: Config.appSettings().database.host,
-    user: Config.appSettings().database.username,
-    password: Config.appSettings().database.password,
-    database: Config.appSettings().database.database*/
     connectionLimit: 1,
-    host: '34.89.126.80',
-    user: 'user_1',//process.env.SQL_USER,
-    password: 'user_123',//process.env.SQL_PASSWORD,
-    database: 'jmccambridge06',//process.env.SQL_NAME
-    //socketPath: '/cloudsql/travel-with-4cd49:europe-west2:csc7057-instance'
+    host: '34.89.126.80', // used for local testing
+    user: config.SQL_USER,
+    password: config.SQL_PASSWORD,
+    database: config.SQL_NAME,
+    //socketPath:  config.SQL_PATH, // used for deployment
 });
 
+/**
+ * Used for multiple queries.
+ */
 const multipool = mysql.createPool({
-    /*connectionLimit : 1,
-    host: Config.appSettings().database.host,
-    user: Config.appSettings().database.username,
-    password: Config.appSettings().database.password,
-    database: Config.appSettings().database.database*/
     connectionLimit: 1,
-    host: '34.89.126.80',
-    user: 'user_1',//process.env.SQL_USER,
-    password: 'user_123',//process.env.SQL_PASSWORD,
-    database: 'jmccambridge06',//process.env.SQL_NAME
-    //socketPath: '/cloudsql/travel-with-4cd49:europe-west2:csc7057-instance',
+    host: '34.89.126.80', // used for local testing
+    user: config.SQL_USER,
+    password: config.SQL_PASSWORD,
+    database: config.SQL_NAME,
+    //socketPath:  config.SQL_PATH, // used for deployment
     multipleStatements: true
 });
 
 /**
- * Takes an sql line with insert parameter and returns an error or result.
+ * Takes an sql query with insert parameters and returns an sql error or result. Used for single queries.
  * @param {*} sql 
  * @param {*} parameter 
  * @param {*} errorMessage 
@@ -52,7 +49,7 @@ function queryDb(sql, parameter, errorMessage) {
 }
 
 /**
- * Used for multi query transactions.
+ * Takes an sql query with insert parameters and returns an sql error or result. Used for multiple queries.
  * @param {*} sql 
  * @param {*} parameter 
  * @param {*} errorMessage 
@@ -74,28 +71,23 @@ function multiqueryDb(sql, parameter, errorMessage) {
 }
 
 /**
- * Takes a string as input and checks if the string is empty or contains null. This means a null value should be entered into the database instead of the string so null will be returned. If not 
- * then the string is returned.
+ * Takes a string as input and checks if the string is empty or contains null. If string is empty or contains 'null' then null is returned.
+ * Otherwise the field is returned.
  * @param {*} field 
  */
 function checkNull(field) {
-   // console.log("fieleddd");
-    //console.log(field);
     if (!field) {
-        //console.log("not field!");
-        return null; // was return field
+        return null; // If it itself is null
     } else {
-        // check if a number (taken from db instead of from device)
+        // check if a number (required where a value is taken from db instead of as json from device)
         if (typeof(field) === 'string') {
-            //console.log("is not a number");
+            // check if string contains null or is empty and return null or the field accordingly
             if (field.trim() === "" || field === "null") {
                 return null;
             } else {
-                //console.log("not a number but not field");
                 return field;
             }
         }
-        //console.log("is a number");
         return field;
     }
 

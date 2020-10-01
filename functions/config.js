@@ -12,5 +12,9 @@ module.exports = {
     MEgCQQCRu/EqU5SA/Bpuih6zxLuKtCHccdmzq+BfnmxKSvU94iD5hMmzNjQrLAUF\
     uu6kNjzFlL2baaS2oHfvX3Tkp9QtAgMBAAE=\
     -----END RSA PUBLIC KEY-----',
-    'cloudMessagingKey': 'AAAAVGzxFK0:APA91bF0i4GG15_6Ckz2pOB4e5SdqkmzFzWVgQaAnE96FD1OSPWGuq-wWKjTjBwKs0-jyoBntrTDba0qjSV9ixr99vvhtkOwKA8cMrOvh6XV7_eDGD0zfTAMLcGOoVlVZOMGJpK4bx9b'
+    'cloudMessagingKey': 'AAAAVGzxFK0:APA91bF0i4GG15_6Ckz2pOB4e5SdqkmzFzWVgQaAnE96FD1OSPWGuq-wWKjTjBwKs0-jyoBntrTDba0qjSV9ixr99vvhtkOwKA8cMrOvh6XV7_eDGD0zfTAMLcGOoVlVZOMGJpK4bx9b',
+    'SQL_USER': 'user_1',
+    'SQL_PASSWORD': 'user_123',
+    'SQL_NAME': 'jmccambridge06',
+    'SQL_PATH': '/cloudsql/travel-with-4cd49:europe-west2:csc7057-instance'
   };

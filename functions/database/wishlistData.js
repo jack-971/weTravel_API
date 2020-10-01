@@ -1,5 +1,9 @@
 const db = require('./database');
 
+/**
+ * Gets a wishlist for a given user
+ * @param {*} userId 
+ */
 function getWishlist(userId) {
     var sql = "SELECT LocationID FROM WT_Wishlist WHERE UserID = ?;"
     const parameter = [userId];
@@ -7,6 +11,10 @@ function getWishlist(userId) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Gets all locations visited by user. Unions together trips, legs and activities ensuring no duplicates.
+ * @param {*} userId 
+ */
 function getLocations(userId) {
     sql = "SELECT LocationID FROM WT_TripPost WHERE UserID = ?\
     UNION\
@@ -18,6 +26,11 @@ function getLocations(userId) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Creates a new wishlist item
+ * @param {*} userId 
+ * @param {*} locationId 
+ */
 function postWishlistItem(userId, locationId) {
     var sql = "INSERT INTO WT_Wishlist VALUES (?, ?);"
     const parameter = [userId, locationId];
@@ -25,6 +38,11 @@ function postWishlistItem(userId, locationId) {
     return db.queryDb(sql, parameter, errorMessage);
 }
 
+/**
+ * Removes an item from a wishlist
+ * @param {*} userId 
+ * @param {*} locationId 
+ */
 function deleteWishlistItem(userId, locationId) {
     var sql = "DELETE FROM WT_Wishlist WHERE UserID = ? AND LocationID = ?;"
     const parameter = [userId, locationId];

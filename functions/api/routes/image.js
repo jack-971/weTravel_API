@@ -3,11 +3,17 @@ const router = express.Router();
 
 const image = require('../../database/imageData');
 
+/**
+ * Route to post a new image. Determines if post has an existing gallery. If not creates one with the image,
+ * otherwise attaches the image to the existing gallery.
+ */
 router.post('/:id', async(req, res, next) => {
     try {
         const postId = parseInt(req.params.id);
+        // Search for existing gallery
         const galleryId = await image.getGallery(postId, req.body.type, parseInt(req.body.user));
         let newGallery = true;
+        // Determine if search returned a gallery
         if (galleryId[0].GalleryID !== null) {
             console.log("not null");
             newGallery = false;
@@ -20,6 +26,9 @@ router.post('/:id', async(req, res, next) => {
 
 });
 
+/**
+ * Route to get images associated with a post.
+ */
 router.get('/:id', async(req, res, next) => {
     try {
         const postId = parseInt(req.params.id);

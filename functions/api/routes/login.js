@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
-const fcm = require('../middleware/pushNotification');
+//const fcm = require('../middleware/pushNotification');
 
 const login = require('../../database/loginData');
 
@@ -20,20 +20,10 @@ router.post('/', async(req, res, next) => {
         const userId = loginDetails[0].UserID;
         if (match) {
             const token = jwt.sign({"userId": userId}, config.privateKey);
-            console.log(token);
             res.status(200).json({"token": token});
         } else {
             res.status(500).json({"message": "not authorised"});
         }
-    } catch (err) {
-        return next(err);
-    }
-});
-
-router.get('/', async(req, res, next) => {
-    try {
-            res.status(500).json({"message": "it works for once"});
-
     } catch (err) {
         return next(err);
     }

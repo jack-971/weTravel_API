@@ -1,17 +1,21 @@
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
 
+/**
+ * Function extracts an authorization token from a request header. Decodes token against a private key 
+ * and sends request on to next route.
+ * If no token or invalid then rejects request with reason.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 function authorize(req, res, next) {
-    console.log("in authorize middleware");
     const token = req.headers.authorization;
-    console.log(token);
     if (!token) {
         return res.status(401).send('Access denied.');
     }  else {
         try {
-            console.log(config.privateKey);
-            const decoded = jwt.verify(token, config.privateKey);
-            console.log(decoded);
+            jwt.verify(token, config.privateKey);
             return next();
         }
         catch (ex) {
@@ -20,6 +24,5 @@ function authorize(req, res, next) {
         }
     }
 }
-
 
 module.exports = authorize;

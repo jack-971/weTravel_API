@@ -1,6 +1,7 @@
+// Add all packages required
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-admin.initializeApp(functions.config().firebase); // should be my json file?
+admin.initializeApp(functions.config().firebase); // set up firebase credentials
 
 const express = require('express');
 const app = express();
@@ -14,23 +15,18 @@ app.use(bodyParser.json());
 
 const errorHandlers = require('./api/middleware/errorhandlers');
 
-
+// Used for local testing
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log('REST API listening on PORT '+port);
 });
 
-app.get('/', async(req, res) => {
-    res.json({status: 'API is ready to go'});
-});
-
-// Connect routes
+// Connection routes
 const loginRoute = require('./api/routes/login');
 app.use('/login', loginRoute);
 const registerRoute = require('./api/routes/register');
 app.use('/register', registerRoute);
-
-const authorization = require('./api/middleware/authorization');
+const authorization = require('./api/middleware/authorization'); // middleware authorization routes
 app.use("/secure", authorization);
 const profileRoute = require('./api/routes/profile');
 app.use('/secure/profile', profileRoute);

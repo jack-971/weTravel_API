@@ -1,6 +1,13 @@
 const db = require('./database');
-const { param } = require('../api/routes/register');
 
+/**
+ * Query creates a new user. Creates profile, settings, login and notification centres for user.
+ * @param {*} username 
+ * @param {*} password 
+ * @param {*} name 
+ * @param {*} dob 
+ * @param {*} date 
+ */
 function registerUser(username, password, name, dob, date) {
     const sql = "START TRANSACTION; \
     INSERT INTO WT_User VALUES (NULL); \
@@ -14,7 +21,6 @@ function registerUser(username, password, name, dob, date) {
     const errorMessage = "Error registering user in database";
     return db.multiqueryDb(sql, parameter, errorMessage);
 }
-
 
 module.exports = {
     registerUser
